@@ -1,0 +1,151 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Student Registration System</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+    <div class="container">
+
+        <h1>Student Registration</h1>
+        <p>Enter your details below</p>
+
+        <form id="studentForm">
+
+            <label>Student Name</label>
+            <input type="text" id="name"
+                placeholder="Enter your name">
+
+            <label>Email Address</label>
+            <input type="text" id="email"
+                placeholder="Enter your email">
+
+            <label>Age</label>
+            <input type="number" id="age"
+                placeholder="Enter your age">
+
+            <label>Select Course</label>
+
+            <select id="course">
+                <option value="">Select Course</option>
+                <option value="BCA">BCA</option>
+                <option value="BBA">BBA</option>
+                <option value="B.Com">B.Com</option>
+                <option value="B.Sc">B.Sc</option>
+                <option value="MCA">MCA</option>
+            </select>
+
+            <button type="submit">Register</button>
+
+            <p id="message"></p>
+
+        </form>
+
+        <h2>Registered Students</h2>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Email</th>
+                    <th>Age</th>
+                    <th>Course</th>
+                </tr>
+            </thead>
+
+            <tbody id="studentList"></tbody>
+        </table>
+
+    </div>
+
+    <script>
+
+        const form = document.getElementById("studentForm");
+        const message = document.getElementById("message");
+        const studentList = document.getElementById("studentList");
+
+        // Display students
+        async function displayStudents() {
+
+            const response = await fetch("/students");
+            const students = await response.json();
+
+            studentList.innerHTML = "";
+
+            students.forEach(student => {
+
+                const row = document.createElement("tr");
+
+                [
+                    student.name,
+                    student.email,
+                    student.age,
+                    student.course
+                ].forEach(value => {
+
+                    const cell = document.createElement("td");
+                    cell.textContent = value;
+                    row.appendChild(cell);
+
+                });
+
+                studentList.appendChild(row);
+
+            });
+        }
+
+        // Submit form
+        form.addEventListener("submit", async function(event) {
+
+            event.preventDefault();
+
+            const student = {
+                name: document.getElementById("name").value,
+                email: document.getElementById("email").value,
+                age: document.getElementById("age").value,
+                course: document.getElementById("course").value
+            };
+
+            try {
+
+                const response = await fetch("/register", {
+
+                    method: "POST",
+
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+
+                    body: JSON.stringify(student)
+
+                });
+
+                const result = await response.json();
+
+                message.textContent = result.message;
+                message.style.color = response.ok ? "green" : "red";
+
+                if (response.ok) {
+                    form.reset();
+                    displayStudents();
+                }
+
+            } catch (error) {
+
+                message.textContent = "Unable to connect to server.";
+                message.style.color = "red";
+
+            }
+
+        });
+
+        // Load students when page opens
+        displayStudents();
+
+    </script>
+
+</body>
+</html>
